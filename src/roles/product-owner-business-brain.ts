@@ -1,17 +1,17 @@
 import type { Role } from './types';
 
-// Adapted from the MonoEdge "Product Owner – Business Brain" JD (2–4 yrs).
+// Adapted from the MonoEdge "Product Owner – Operations Intelligence (Business Brain)" JD (2–4 yrs).
 export const productOwnerBusinessBrain: Role = {
   slug: 'product-owner-business-brain-7b3e6c',
   id: 'PO-BRAIN',
-  title: 'Product Owner — Business Brain',
+  title: 'Product Owner — Operations Intelligence (Business Brain)',
   eyebrow: 'Role 08 · Product',
   location: 'Pune, Maharashtra, with occasional travel to customer sites',
   employment: 'Full-time · permanent',
   reportsTo: 'Founder',
   travel: 'Occasional, to customer sites',
   summary:
-    'Own the Business Brain roadmap and stand between customers and engineering — turning what plant teams need into what gets built, and accepted.',
+    'Own the Operations Intelligence (Business Brain) roadmap and stand between customers and engineering — turning what plant teams need into what gets built, and accepted.',
   signal: 'roadmap',
   positioning: 'Product ownership · 2–4 years.',
 
@@ -28,7 +28,7 @@ export const productOwnerBusinessBrain: Role = {
       heading: 'Position summary',
       kind: 'prose',
       body: [
-        'As Product Owner for the Business Brain, you own the product roadmap and act as the principal interface between customers and the engineering team.',
+        'As Product Owner for the Operations Intelligence (Business Brain), you own the product roadmap and act as the principal interface between customers and the engineering team.',
         'You own prioritisation, requirement definition, and acceptance of delivered functionality — and you are accountable for ensuring that the product addresses real customer needs and business objectives.',
       ],
     },

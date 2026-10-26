@@ -1,18 +1,18 @@
 import type { Role } from './types';
 
-// The first non-senior role: a graduate hire for the Business Brain team.
+// The first non-senior role: a graduate hire for the Operations Intelligence (Business Brain) team.
 // Written from scratch for MonoEdge — there was no source JD.
 export const businessBrainAssociate: Role = {
   slug: 'business-brain-associate-5c1a7e',
   id: 'BIZ-BRAIN',
-  title: 'Graduate Engineer — Business Brain',
-  eyebrow: 'Role 04 · Business Brain · Graduate',
+  title: 'Graduate Engineer — Operations Intelligence (Business Brain)',
+  eyebrow: 'Role 04 · Operations Intelligence (Business Brain) · Graduate',
   location: 'Pune, with frequent travel to customer sites across India',
   employment: 'Full-time · graduate / entry-level',
   reportsTo: 'Founder and senior team',
   travel: 'Frequent, to customer plants and automation partners',
   summary:
-    "Get MonoEdge's Business Brain live on real plant floors — deploy it, wire it into PLCs and automation partners, then turn what comes back into root-cause answers.",
+    "Get MonoEdge's Operations Intelligence (Business Brain) live on real plant floors — deploy it, wire it into PLCs and automation partners, then turn what comes back into root-cause answers.",
   signal: 'network',
   positioning: 'Graduate / entry-level role.',
 
@@ -26,10 +26,10 @@ export const businessBrainAssociate: Role = {
       ],
     },
     {
-      heading: 'What the Business Brain is',
+      heading: 'What the Operations Intelligence (Business Brain) is',
       kind: 'prose',
       body: [
-        'The Business Brain is the decision layer of our product — the part that behaves like an always-on analyst rather than another dashboard. It reads what is happening across a plant, connects production data to sales, quality, energy, and cost, and tells the people running the floor what is going wrong and why.',
+        'The Operations Intelligence (Business Brain) is the decision layer of our product — the part that behaves like an always-on analyst rather than another dashboard. It reads what is happening across a plant, connects production data to sales, quality, energy, and cost, and tells the people running the floor what is going wrong and why.',
         'None of that matters until it is running on a real line. This role is how it gets there. You are the person who takes the system to a customer plant, stands it up alongside their machines and automation partners, and then stays close to the data it produces to make sure the answers it gives are true.',
       ],
     },
@@ -39,7 +39,7 @@ export const businessBrainAssociate: Role = {
       body: [
         {
           lead: 'On-site deployment',
-          text: '— travelling to customer plants, setting up our hardware and software next to live production, and getting the Business Brain reading real data within days, not weeks.',
+          text: '— travelling to customer plants, setting up our hardware and software next to live production, and getting the Operations Intelligence (Business Brain) reading real data within days, not weeks.',
         },
         {
           lead: 'PLCs and automation partners',
@@ -55,7 +55,7 @@ export const businessBrainAssociate: Role = {
         },
         {
           lead: 'Basic machine learning',
-          text: '— helping the senior team validate and monitor the models behind the Business Brain: preparing labelled data, sanity-checking predictions against ground truth, and flagging when a model has drifted.',
+          text: '— helping the senior team validate and monitor the models behind the Operations Intelligence (Business Brain): preparing labelled data, sanity-checking predictions against ground truth, and flagging when a model has drifted.',
         },
       ],
     },

@@ -1,7 +1,7 @@
 import type { Role } from './types';
 
 // A graduate data-engineering role — the plumbing beneath the analytics and the
-// Business Brain. Written from scratch for MonoEdge — there was no source JD.
+// Operations Intelligence (Business Brain). Written from scratch for MonoEdge — there was no source JD.
 export const dataEngineer: Role = {
   slug: 'data-engineer-b4e8c1',
   id: 'DATA-ENG',
