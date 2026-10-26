@@ -5,8 +5,9 @@ role page carries its own job description, screening questions, and written
 question, and works as a standalone link you can send to one candidate.
 
 The site is served at **https://careers.monoedge.in/** (custom domain set via
-`public/CNAME`; GitHub Pages otherwise serves it at
-`https://rubanzer.github.io/monoedge-careers/`).
+`public/CNAME`). A separate copy also runs at
+`https://vr-monoedge.github.io/hiring/`, which this repository does not
+control. Canonical tags point that copy at careers.monoedge.in.
 
 | Page | URL |
 | --- | --- |
