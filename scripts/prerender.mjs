@@ -30,7 +30,8 @@ await build({
   logLevel: 'warning',
 });
 
-const { renderBody, canonicalUrls } = await import(pathToFileURL(outfile).href);
+const { renderBody, canonicalUrls, canonicalFor, requiredVisibleText, structuredDataScript } =
+  await import(pathToFileURL(outfile).href);
 
 const sitemap = readFileSync(join(root, 'public/sitemap.xml'), 'utf8');
 const robots = readFileSync(join(root, 'public/robots.txt'), 'utf8');
@@ -65,8 +66,33 @@ for (const file of files) {
   }
   const body = renderBody(file);
   if (!body.trim()) throw new Error(`prerender: empty render for ${file}`);
+  const ld = structuredDataScript(file);
+  if (/baseSalary|validThrough|datePosted|salaryCurrency/.test(ld)) {
+    throw new Error(`prerender: structured data invented a pay or date field for ${file}`);
+  }
   // Function replacer so role text cannot be read as a $ replacement.
-  const next = html.replace(/<div id="root"><\/div>/, () => `<div id="root">${body}</div>`);
+  let next = html.replace(/<div id="root"><\/div>/, () => `<div id="root">${body}</div>`);
+  next = next.replace('</head>', () => `    ${ld}\n  </head>`);
+  const canonical = canonicalFor(file);
+  if (!next.includes(`rel="canonical" href="${canonical}"`)) {
+    throw new Error(`prerender: missing canonical ${canonical} in ${file}`);
+  }
+  if (!next.includes(`property="og:url" content="${canonical}"`)) {
+    throw new Error(`prerender: missing og:url ${canonical} in ${file}`);
+  }
+  if (!next.includes('property="og:title"') || !next.includes('property="og:description"')) {
+    throw new Error(`prerender: missing Open Graph title or description in ${file}`);
+  }
+  for (const text of requiredVisibleText(file)) {
+    if (!next.includes(text)) throw new Error(`prerender: "${text}" missing from ${file}`);
+  }
+  const isIndex = file.endsWith('/index.html') && canonical.endsWith('careers.monoedge.in/');
+  if (isIndex) {
+    if (!ld.includes('"@type":"Organization"')) throw new Error('listing page is missing Organization JSON-LD');
+    if (ld.includes('JobPosting')) throw new Error('listing page must not carry a JobPosting');
+  } else if (!ld.includes('"@type":"JobPosting"') || !ld.includes('Monoedge Systems Private Limited')) {
+    throw new Error(`prerender: role page missing JobPosting JSON-LD in ${file}`);
+  }
   writeFileSync(file, next);
   console.log(`prerendered ${file.slice(dist.length)}`);
 }

@@ -3,6 +3,7 @@ import { renderToString } from 'react-dom/server';
 import { CareersPage } from '../components/CareersPage';
 import { RolePage } from '../components/RolePage';
 import { ROLES, ROLE_SLUGS, type RoleSlug } from '../roles';
+import { jobPostingLd, jsonLdScript, organizationLd } from '../seo/structuredData';
 
 const CANONICAL_ORIGIN = 'https://careers.monoedge.in';
 
@@ -23,6 +24,25 @@ export function pageFor(filename: string): PrerenderPage {
   }
   if (normalized.endsWith('/index.html')) return { kind: 'index' };
   throw new Error(`No careers page for ${filename}`);
+}
+
+export function canonicalFor(filename: string): string {
+  const page = pageFor(filename);
+  return page.kind === 'index' ? `${CANONICAL_ORIGIN}/` : `${CANONICAL_ORIGIN}/${page.slug}/`;
+}
+
+/** Text that must survive in the raw HTML for this page. */
+export function requiredVisibleText(filename: string): string[] {
+  const page = pageFor(filename);
+  if (page.kind === 'index') return ['Eight roles. One plant floor at a time.'];
+  const role = ROLES[page.slug];
+  return [role.title, role.sections[0]?.heading ?? role.summary];
+}
+
+export function structuredDataScript(filename: string): string {
+  const page = pageFor(filename);
+  if (page.kind === 'index') return jsonLdScript(organizationLd());
+  return jsonLdScript(jobPostingLd(ROLES[page.slug]));
 }
 
 /** Static markup for `#root`. Same components the browser hydrates. */
