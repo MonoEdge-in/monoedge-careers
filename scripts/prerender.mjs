@@ -30,7 +30,18 @@ await build({
   logLevel: 'warning',
 });
 
-const { renderBody } = await import(pathToFileURL(outfile).href);
+const { renderBody, canonicalUrls } = await import(pathToFileURL(outfile).href);
+
+const sitemap = readFileSync(join(root, 'public/sitemap.xml'), 'utf8');
+const robots = readFileSync(join(root, 'public/robots.txt'), 'utf8');
+if (!robots.includes('Sitemap: https://careers.monoedge.in/sitemap.xml')) {
+  throw new Error('robots.txt is missing the careers sitemap URL');
+}
+for (const url of canonicalUrls()) {
+  if (!sitemap.includes(`<loc>${url}</loc>`)) {
+    throw new Error(`sitemap.xml is missing ${url}`);
+  }
+}
 
 function htmlFiles(dir) {
   const found = [];

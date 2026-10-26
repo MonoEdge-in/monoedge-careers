@@ -4,6 +4,13 @@ import { CareersPage } from '../components/CareersPage';
 import { RolePage } from '../components/RolePage';
 import { ROLES, ROLE_SLUGS, type RoleSlug } from '../roles';
 
+const CANONICAL_ORIGIN = 'https://careers.monoedge.in';
+
+/** Listing page, then each published role URL. */
+export function canonicalUrls(): string[] {
+  return [CANONICAL_ORIGIN + '/', ...ROLE_SLUGS.map((slug) => `${CANONICAL_ORIGIN}/${slug}/`)];
+}
+
 export type PrerenderPage =
   | { kind: 'index' }
   | { kind: 'role'; slug: RoleSlug };
