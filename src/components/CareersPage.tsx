@@ -24,7 +24,7 @@ function RoleRow({ slug }: { slug: (typeof ROLE_SLUGS)[number] }) {
             {role.summary}
           </p>
           <p className="t-readout mt-4 text-[color:var(--color-edge-blue)]">
-            {role.location.split(',')[0]} · {role.employment}
+            {`${role.location.split(',')[0]} · ${role.employment}`}
             <span className="ml-3 inline-block transition-transform group-hover:translate-x-1">→</span>
           </p>
         </div>
@@ -61,7 +61,7 @@ export function CareersPage() {
           <div className="mt-20 lg:mt-28">
             <p className="t-label">Careers</p>
             <h1 className="t-display mt-5 max-w-3xl text-[clamp(2rem,5.4vw,3.75rem)]">
-              {countTitle} roles. One plant floor at a time.
+              {`${countTitle} roles. One plant floor at a time.`}
             </h1>
             <p className="mt-6 max-w-2xl text-[1.0625rem] leading-relaxed text-[color:var(--color-muted)]">
               MonoEdge builds an intelligence layer for Indian mid-market manufacturing — software that
@@ -78,7 +78,7 @@ export function CareersPage() {
           <aside className="lg:sticky lg:top-10 lg:self-start">
             <p className="t-label">Open roles</p>
             <p className="t-readout mt-3 text-[color:var(--color-muted)]">
-              All {count} are Pune-based, full-time, with travel to partner plants across India.
+              {`All ${count} are Pune-based, full-time, with travel to partner plants across India.`}
             </p>
           </aside>
 

@@ -1,27 +1,36 @@
 import { useEffect, useRef } from 'react';
-import Lenis from 'lenis';
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-/** Smooth scrolling, skipped entirely when the visitor asked for reduced motion. */
+/**
+ * Smooth scrolling, skipped entirely when the visitor asked for reduced motion.
+ * Lenis is loaded inside the effect so prerendering never touches `window`.
+ */
 export function useSmoothScroll(): void {
   useEffect(() => {
     if (prefersReducedMotion()) return;
 
-    const lenis = new Lenis({ duration: 1.05, wheelMultiplier: 0.9 });
     let frame = 0;
+    let destroyed = false;
+    let lenis: { raf: (time: number) => void; destroy: () => void } | null = null;
 
     const raf = (time: number) => {
-      lenis.raf(time);
+      lenis?.raf(time);
       frame = requestAnimationFrame(raf);
     };
-    frame = requestAnimationFrame(raf);
+
+    void import('lenis').then(({ default: Lenis }) => {
+      if (destroyed) return;
+      lenis = new Lenis({ duration: 1.05, wheelMultiplier: 0.9 });
+      frame = requestAnimationFrame(raf);
+    });
 
     return () => {
+      destroyed = true;
       cancelAnimationFrame(frame);
-      lenis.destroy();
+      lenis?.destroy();
     };
   }, []);
 }

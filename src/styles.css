@@ -367,8 +367,15 @@ html.lenis {
   background: var(--color-haze);
 }
 
-/* Reveal-on-scroll: small, once, never in reduced motion. */
+/* Reveal-on-scroll: small, once, never in reduced motion.
+   Without the .js class (no JavaScript, or a crawler that does not run it)
+   the copy stays visible. An inline script in <head> adds .js before paint. */
 .reveal {
+  opacity: 1;
+  transform: none;
+}
+
+html.js .reveal {
   opacity: 0;
   transform: translateY(10px);
   transition:
@@ -376,14 +383,15 @@ html.lenis {
     transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.reveal[data-shown='true'] {
+html.js .reveal[data-shown='true'] {
   opacity: 1;
   transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
+  html.js .reveal {
     opacity: 1;
     transform: none;
+    transition: none;
   }
 }
