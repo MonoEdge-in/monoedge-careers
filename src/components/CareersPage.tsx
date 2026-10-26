@@ -55,7 +55,12 @@ export function CareersPage() {
         <div className="relative mx-auto w-full max-w-6xl px-6 pt-8 pb-16 sm:px-10 lg:pb-20">
           <div className="flex items-center justify-between gap-6">
             <Wordmark />
-            <span className="t-label hidden sm:block">Pune</span>
+            <div className="flex items-center gap-4">
+              <a href="https://www.monoedge.in" className="t-label no-underline hover:opacity-70">
+                monoedge.in
+              </a>
+              <span className="t-label hidden sm:block">Pune</span>
+            </div>
           </div>
 
           <div className="mt-20 lg:mt-28">
@@ -109,7 +114,13 @@ export function CareersPage() {
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-10">
           <Wordmark />
           <p className="t-readout text-[color:var(--color-muted)]">
-            krishna@monoedge.in · 9730922589 · Pune
+            <a
+              href="https://www.monoedge.in"
+              className="underline decoration-[color:var(--color-rule-strong)] underline-offset-4 hover:text-[color:var(--color-edge-blue)]"
+            >
+              Monoedge Systems
+            </a>
+            {' · krishna@monoedge.in · 9730922589 · Pune'}
           </p>
         </div>
       </footer>

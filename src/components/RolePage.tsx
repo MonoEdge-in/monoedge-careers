@@ -25,7 +25,13 @@ export function RolePage({ role }: { role: Role }) {
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-10">
           <Wordmark nested />
           <p className="t-readout text-[color:var(--color-muted)]">
-            krishna@monoedge.in · 9730922589 · Pune
+            <a
+              href="https://www.monoedge.in"
+              className="underline decoration-[color:var(--color-rule-strong)] underline-offset-4 hover:text-[color:var(--color-edge-blue)]"
+            >
+              Monoedge Systems
+            </a>
+            {' · krishna@monoedge.in · 9730922589 · Pune'}
           </p>
         </div>
       </footer>

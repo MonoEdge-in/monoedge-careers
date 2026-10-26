@@ -20,9 +20,14 @@ export function Hero({ role }: { role: Role }) {
       <div className="relative mx-auto w-full max-w-6xl px-6 pt-8 pb-16 sm:px-10 lg:pb-24">
         <div className="flex items-center justify-between gap-6">
           <Wordmark nested />
-          <a href="../" className="t-label hidden no-underline hover:opacity-70 sm:block">
-            All roles
-          </a>
+          <div className="flex items-center gap-4">
+            <a href="https://www.monoedge.in" className="t-label no-underline hover:opacity-70">
+              monoedge.in
+            </a>
+            <a href="../" className="t-label hidden no-underline hover:opacity-70 sm:block">
+              All roles
+            </a>
+          </div>
         </div>
 
         <div className="mt-20 grid gap-12 lg:mt-28 lg:grid-cols-[minmax(0,1fr)_140px] lg:items-end">

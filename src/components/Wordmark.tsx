@@ -6,31 +6,23 @@
  * size. Re-run that script if the source is ever replaced.
  *
  * `nested` means the page sits one level below the site root (a role page),
- * which decides both the asset path and whether the mark links back to the
- * careers index.
+ * which decides the asset path. On a role page the mark returns to the
+ * careers index. On the index it returns to the company site.
  */
 export function Wordmark({ nested = false }: { nested?: boolean }) {
-  const content = (
-    <>
+  return (
+    <a
+      href={nested ? '../' : 'https://www.monoedge.in'}
+      className="flex items-center gap-2.5 no-underline transition-opacity hover:opacity-70"
+    >
       <img
         src={nested ? '../monoedge-mark.png' : './monoedge-mark.png'}
-        alt=""
+        alt="Monoedge Systems logo"
         width={30}
         height={20}
         className="h-5 w-auto shrink-0"
       />
       <span className="t-display text-[0.9375rem] tracking-[0.02em]">MonoEdge</span>
-      <span className="sr-only">MonoEdge Systems</span>
-    </>
-  );
-
-  if (!nested) {
-    return <div className="flex items-center gap-2.5">{content}</div>;
-  }
-
-  return (
-    <a href="../" className="flex items-center gap-2.5 no-underline transition-opacity hover:opacity-70">
-      {content}
     </a>
   );
 }
