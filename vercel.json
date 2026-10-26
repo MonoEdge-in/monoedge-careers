@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "monoedge-careers\\.vercel\\.app" }],
+      "destination": "https://careers.monoedge.in/:path*",
+      "permanent": true
+    }
+  ]
+}
