@@ -11,6 +11,7 @@ export const frontendEngineer: Role = {
   employment: 'Full-time · graduate / entry-level',
   reportsTo: 'Founder and senior team',
   travel: 'Occasional, to see the product used on the floor',
+  datePosted: '2026-10-27',
   summary:
     "Build the product surfaces MonoEdge's users actually touch — clear, fast, multilingual screens that turn industrial data into decisions plant teams trust.",
   signal: 'layout',

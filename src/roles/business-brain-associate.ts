@@ -11,6 +11,7 @@ export const businessBrainAssociate: Role = {
   employment: 'Full-time · graduate / entry-level',
   reportsTo: 'Founder and senior team',
   travel: 'Frequent, to customer plants and automation partners',
+  datePosted: '2026-10-27',
   summary:
     "Get MonoEdge's Operations Intelligence (Business Brain) live on real plant floors — deploy it, wire it into PLCs and automation partners, then turn what comes back into root-cause answers.",
   signal: 'network',

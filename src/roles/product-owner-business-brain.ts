@@ -10,6 +10,7 @@ export const productOwnerBusinessBrain: Role = {
   employment: 'Full-time · permanent',
   reportsTo: 'Founder',
   travel: 'Occasional, to customer sites',
+  datePosted: '2026-10-27',
   summary:
     'Own the Operations Intelligence (Business Brain) roadmap and stand between customers and engineering — turning what plant teams need into what gets built, and accepted.',
   signal: 'roadmap',

@@ -10,6 +10,7 @@ export const productOwnerSignalAnalytics: Role = {
   employment: 'Full-time · permanent',
   reportsTo: 'Founder',
   travel: 'Occasional, to customer sites',
+  datePosted: '2026-10-27',
   summary:
     'Own the delivery of Signals Intelligence (Signal Analytics) — turning high-frequency plant data into early warning, deployed to a repeatable standard across customer sites.',
   signal: 'waveform',

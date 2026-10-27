@@ -67,8 +67,8 @@ for (const file of files) {
   const body = renderBody(file);
   if (!body.trim()) throw new Error(`prerender: empty render for ${file}`);
   const ld = structuredDataScript(file);
-  if (/baseSalary|validThrough|datePosted|salaryCurrency/.test(ld)) {
-    throw new Error(`prerender: structured data invented a pay or date field for ${file}`);
+  if (/baseSalary|validThrough|salaryCurrency/.test(ld)) {
+    throw new Error(`prerender: structured data invented a pay or expiry field for ${file}`);
   }
   // Function replacer so role text cannot be read as a $ replacement.
   let next = html.replace(/<div id="root"><\/div>/, () => `<div id="root">${body}</div>`);
@@ -92,6 +92,8 @@ for (const file of files) {
     if (ld.includes('JobPosting')) throw new Error('listing page must not carry a JobPosting');
   } else if (!ld.includes('"@type":"JobPosting"') || !ld.includes('Monoedge Systems Private Limited')) {
     throw new Error(`prerender: role page missing JobPosting JSON-LD in ${file}`);
+  } else if (!/"datePosted":"\d{4}-\d{2}-\d{2}"/.test(ld)) {
+    throw new Error(`prerender: role page missing datePosted in ${file}`);
   }
   writeFileSync(file, next);
   console.log(`prerendered ${file.slice(dist.length)}`);

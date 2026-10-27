@@ -9,6 +9,7 @@ export const computerVisionEngineer: Role = {
   employment: 'Full-time · on-site / hybrid',
   reportsTo: 'Founder',
   travel: 'Regular, to partner plants',
+  datePosted: '2026-10-27',
   summary:
     'Own the computer vision stack at MonoEdge — cameras, datasets, and models deployed on live production lines.',
   signal: 'calibration',

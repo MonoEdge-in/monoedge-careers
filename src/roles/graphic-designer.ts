@@ -10,6 +10,7 @@ export const graphicDesigner: Role = {
   employment: 'Full-time · on-site / hybrid',
   reportsTo: 'Founder',
   travel: 'Occasional, to partner plants for shoots',
+  datePosted: '2026-10-27',
   summary:
     'Own how MonoEdge looks and sounds — brand, product collateral, and plant-floor films that explain the work honestly.',
   signal: 'frame',

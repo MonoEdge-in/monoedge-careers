@@ -4,8 +4,8 @@ const COMPANY = 'Monoedge Systems Private Limited';
 const COMPANY_SITE = 'https://www.monoedge.in';
 
 /**
- * Fields come from the role records. Salary, datePosted, and validThrough are
- * omitted: those records do not contain them.
+ * Fields come from the role records. baseSalary and validThrough are omitted:
+ * those records do not contain them. datePosted is role.datePosted.
  */
 export function organizationLd() {
   return {
@@ -38,6 +38,7 @@ export function jobPostingLd(role: Role) {
     '@type': 'JobPosting',
     title: role.title,
     description: jobDescription(role),
+    datePosted: role.datePosted,
     url: `https://careers.monoedge.in/${role.slug}/`,
     directApply: true,
     identifier: {

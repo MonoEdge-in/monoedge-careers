@@ -17,7 +17,6 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
 const origin = 'https://careers.monoedge.in';
 const failures = [];
-const gaps = [];
 const notes = [];
 
 function fail(message) {
@@ -27,11 +26,6 @@ function fail(message) {
 
 function pass(message) {
   console.log(`PASS  ${message}`);
-}
-
-function gap(message) {
-  gaps.push(message);
-  console.log(`GAP   ${message}`);
 }
 
 function note(message) {
@@ -133,7 +127,7 @@ function checkHead(html, canonical, label) {
  * hiringOrganization, jobLocation (addressCountry), title.
  * validThrough is required only when the posting expires. baseSalary is
  * recommended. Role records contain neither, so those stay omitted.
- * datePosted is required and also absent — reported, not invented.
+ * datePosted is required and comes from the role record.
  */
 function checkJobPosting(slug, posting, html, canonical) {
   const title = typeof posting.title === 'string' ? posting.title : '';
@@ -161,14 +155,14 @@ function checkJobPosting(slug, posting, html, canonical) {
   if (posting.url !== canonical) fail(`${slug} JobPosting url is ${posting.url || 'missing'}`);
   if (posting.directApply !== true) fail(`${slug} JobPosting directApply is not true`);
 
-  const invented = ['baseSalary', 'salaryCurrency', 'validThrough', 'datePosted'].filter((key) =>
+  if (posting.datePosted !== '2026-10-27') {
+    fail(`${slug} JobPosting datePosted is ${JSON.stringify(posting.datePosted ?? null)}; expected "2026-10-27"`);
+  } else pass(`${slug} JobPosting datePosted`);
+
+  const invented = ['baseSalary', 'salaryCurrency', 'validThrough'].filter((key) =>
     Object.hasOwn(posting, key),
   );
   if (invented.length) fail(`${slug} JobPosting contains ${invented.join(', ')}, which the role records do not provide`);
-
-  if (!Object.hasOwn(posting, 'datePosted')) {
-    gap(`${slug} JobPosting is missing datePosted. Google requires it. The role record has no posted date, so it was not invented.`);
-  }
 }
 
 function checkRobotsAndSitemap(slugs) {
@@ -276,6 +270,33 @@ const JD_HEADINGS = [
 
 const PAY = /₹|\bLPA\b|\bCTC\b|compensation|\bsalary\b|\bstipend\b|\blakhs?\b|pay range|per annum/i;
 
+function pdfText(label, pdfPath) {
+  const extracted = spawnSync(
+    'python3',
+    [
+      '-c',
+      [
+        'import sys',
+        'from pypdf import PdfReader',
+        'reader = PdfReader(sys.argv[1])',
+        'if len(reader.pages) < 1: raise SystemExit("PDF has no pages")',
+        'print("\\n".join((page.extract_text() or "") for page in reader.pages))',
+      ].join('\n'),
+      pdfPath,
+    ],
+    { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 },
+  );
+  if (extracted.status !== 0) {
+    fail(`${label} did not open (${extracted.stderr.trim() || 'pypdf error'})`);
+    return null;
+  }
+  if (!extracted.stdout.trim()) {
+    fail(`${label} opened but no text could be extracted`);
+    return null;
+  }
+  return extracted.stdout;
+}
+
 function checkJobDescriptions() {
   const python = spawnSync('python3', ['-c', 'import pypdf'], { encoding: 'utf8' });
   if (python.status !== 0) {
@@ -283,37 +304,39 @@ function checkJobDescriptions() {
     return;
   }
 
-  for (const jd of NEW_JDS) {
-    const markdown = read(join(root, 'jd', `${jd.file}.md`));
-    const pdfPath = join(root, 'jd/pdf', `${jd.file}.pdf`);
-    checkJdText(`${jd.file}.md`, markdown, jd.phrase);
-
-    const extracted = spawnSync(
-      'python3',
-      [
-        '-c',
-        [
-          'import sys',
-          'from pypdf import PdfReader',
-          'reader = PdfReader(sys.argv[1])',
-          'if len(reader.pages) < 1: raise SystemExit("PDF has no pages")',
-          'print("\\n".join((page.extract_text() or "") for page in reader.pages))',
-        ].join('\n'),
-        pdfPath,
-      ],
-      { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 },
-    );
-    if (extracted.status !== 0) {
-      fail(`${jd.file}.pdf did not open (${extracted.stderr.trim() || 'pypdf error'})`);
-      continue;
-    }
-    if (!extracted.stdout.trim()) {
-      fail(`${jd.file}.pdf opened but no text could be extracted`);
-      continue;
-    }
-    checkJdText(`${jd.file}.pdf`, extracted.stdout, jd.phrase);
-    pass(`${jd.file}.pdf opens (${extracted.stdout.length} chars)`);
+  const jdDir = join(root, 'jd');
+  const markdownNames = readdirSync(jdDir).filter((name) => name.endsWith('.md')).sort();
+  const pdfNames = readdirSync(join(jdDir, 'pdf')).filter((name) => name.endsWith('.pdf')).sort();
+  if (markdownNames.length === 0 || pdfNames.length === 0) {
+    fail('jd/ has no markdown or PDF job descriptions to scan for pay text');
   }
+
+  for (const jd of NEW_JDS) {
+    const markdown = read(join(jdDir, `${jd.file}.md`));
+    checkJdText(`${jd.file}.md`, markdown, jd.phrase);
+    const text = pdfText(`${jd.file}.pdf`, join(jdDir, 'pdf', `${jd.file}.pdf`));
+    if (text === null) continue;
+    checkJdText(`${jd.file}.pdf`, text, jd.phrase);
+    pass(`${jd.file}.pdf opens (${text.length} chars)`);
+  }
+
+  const covered = new Set(NEW_JDS.flatMap((jd) => [`${jd.file}.md`, `${jd.file}.pdf`]));
+  for (const name of markdownNames) {
+    if (covered.has(name)) continue;
+    assertNoPay(`jd/${name}`, read(join(jdDir, name)));
+  }
+  for (const name of pdfNames) {
+    if (covered.has(name)) continue;
+    const text = pdfText(`jd/pdf/${name}`, join(jdDir, 'pdf', name));
+    if (text === null) continue;
+    assertNoPay(`jd/pdf/${name}`, text);
+  }
+}
+
+function assertNoPay(label, text) {
+  const pay = flat(text).match(PAY);
+  if (pay) fail(`${label} contains pay text (${pay[0]})`);
+  else pass(`${label} has no pay text`);
 }
 
 function flat(text) {
@@ -326,10 +349,10 @@ function checkJdText(label, text, phrase) {
   if (missing.length) fail(`${label} is missing ${missing.join(', ')}`);
   if (!normalized.includes(phrase)) fail(`${label} is missing "${phrase}"`);
   const pay = normalized.match(PAY);
-  if (pay) fail(`${label} contains a pay range (${pay[0]})`);
+  if (pay) fail(`${label} contains pay text (${pay[0]})`);
   if (/https?:\/\//.test(normalized)) fail(`${label} contains an http link`);
   if (!missing.length && normalized.includes(phrase) && !pay && !/https?:\/\//.test(normalized)) {
-    pass(`${label} renders with no pay range`);
+    pass(`${label} has no pay text`);
   }
 }
 
@@ -458,7 +481,7 @@ await checkPreview(slugs);
 
 console.log('');
 if (failures.length) {
-  console.error(`${failures.length} failed, ${gaps.length} Google field gap(s).`);
+  console.error(`${failures.length} failed.`);
   process.exit(1);
 }
-console.log(`All checks passed. ${gaps.length} Google-required field gap(s) reported and not invented.`);
+console.log('All checks passed.');

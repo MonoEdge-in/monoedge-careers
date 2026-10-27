@@ -9,6 +9,7 @@ export const dataScientist: Role = {
   employment: 'Full-time · on-site / hybrid',
   reportsTo: 'Founder',
   travel: 'Regular, to partner plants',
+  datePosted: '2026-10-27',
   summary:
     'Own the analytical spine at MonoEdge — yield and quality models built on real industrial data, defensible in rupees.',
   signal: 'timeseries',
