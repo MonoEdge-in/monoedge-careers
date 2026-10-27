@@ -37,7 +37,10 @@ The careers index is at `http://localhost:5173/`, and each role at its slug path
 ```bash
 npm run build     # type-check, then build all three into dist/
 npm run preview   # serve the built output
+npm run check     # build, then check pages, SEO, the host redirect, and the three new JDs
 ```
+
+`npm run check` needs Python 3 and `pypdf` to read the JD PDFs. It does not submit an application.
 
 ## Connecting the Google Sheet
 

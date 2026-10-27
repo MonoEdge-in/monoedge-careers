@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b --noEmit && vite build && node scripts/prerender.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check": "npm run build && node scripts/check.mjs"
   },
   "dependencies": {
     "lenis": "^1.1.20",
