@@ -30,6 +30,8 @@ export type Role = {
   employment: string;
   reportsTo: string;
   travel: string;
+  /** ISO date emitted as JobPosting datePosted. */
+  datePosted: string;
   /** One line for <meta description> and link previews. */
   summary: string;
   /** The motif drawn in the hero — each role gets its own instrument. */

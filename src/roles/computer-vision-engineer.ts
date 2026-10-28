@@ -8,9 +8,10 @@ export const computerVisionEngineer: Role = {
   location: 'Pune, with travel to manufacturing sites across India',
   employment: 'Full-time · on-site / hybrid',
   reportsTo: 'Founder',
-  travel: 'Regular, to partner plants',
+  travel: 'Regular, to customer plants',
+  datePosted: '2026-10-27',
   summary:
-    'Own the computer vision stack at MonoEdge — cameras, datasets, and models deployed on live production lines.',
+    "Build the computer vision stack for Camera Intelligence, which is on Monoedge's roadmap: cameras, datasets and models, built to run on real production lines.",
   signal: 'calibration',
 
   sections: [
@@ -49,7 +50,7 @@ export const computerVisionEngineer: Role = {
       kind: 'list',
       body: [
         {
-          text: 'Specify and deploy camera and capture infrastructure at our first partner plant. Hands-on, industrial, not a desk job.',
+          text: 'Specify and deploy camera and capture infrastructure at customer plants as the work moves from roadmap to pilot. Hands-on, industrial, not a desk job.',
         },
         {
           text: 'Build datasets from scratch: capture, label, version, manage. Define what "good labels" mean for an industrial problem where no public dataset exists.',
@@ -90,7 +91,7 @@ export const computerVisionEngineer: Role = {
         },
         {
           lead: 'Industrial camera experience:',
-          text: 'Basler, FLIR, Hikrobot, or similar. Comfortable with GigE / USB3 Vision, exposure and gain tuning, lens selection.',
+          text: 'Hands-on experience with industrial machine-vision cameras (any major make). Comfortable with GigE / USB3 Vision, exposure and gain tuning, lens selection.',
         },
         {
           lead: 'Strong Python:',

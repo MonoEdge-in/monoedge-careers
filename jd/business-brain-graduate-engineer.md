@@ -1,4 +1,4 @@
-# Graduate Engineer — Business Brain
+# Graduate Engineer — Operations Intelligence (Business Brain)
 
 **MonoEdge · Pune (with frequent travel to customer sites across India)**
 **Full-time · Graduate / entry-level · 2025 and 2026 graduates**
@@ -15,11 +15,11 @@ floor what is going wrong and why — in English, Hindi, and Marathi.
 
 We are a technically-driven, bootstrapped company defining a new category in
 industrial optimization. The person we hire will help take our core product, the
-*Business Brain*, live on real factory floors.
+*Operations Intelligence (Business Brain)*, live on real factory floors.
 
 ## About the role
 
-The Business Brain is the decision layer of our product. None of it matters
+The Operations Intelligence (Business Brain) is the decision layer of our product. None of it matters
 until it is running on a real line — and this role is how it gets there.
 
 As a Graduate Engineer, you will travel to customer plants, stand our system up
@@ -37,7 +37,7 @@ senior team that has shipped all three.
 ## What you will do
 
 - **Deploy on-site.** Travel to customer plants, set up our hardware and
-  software next to live production, and get the Business Brain reading real data
+  software next to live production, and get the Operations Intelligence (Business Brain) reading real data
   within days.
 - **Work with PLCs and automation partners.** Coordinate with the customer's
   controls team and their automation vendors to read the right tags over OPC UA
@@ -102,7 +102,6 @@ familiarity with Git and the command line.
 | **Type** | Full-time, graduate / entry-level |
 | **Reports to** | Founder and senior team |
 | **Eligibility** | 2025 and 2026 graduates; any engineering discipline; basic coding knowledge |
-| **Compensation** | ₹6–12 LPA, based on skills and interview |
 
 ## Selection process
 

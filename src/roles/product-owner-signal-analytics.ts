@@ -1,17 +1,18 @@
 import type { Role } from './types';
 
-// Adapted from the MonoEdge "Product Owner – Signal Analytics" JD (2–4 yrs).
+// Adapted from the MonoEdge "Product Owner – Signals Intelligence (Signal Analytics)" JD (2–4 yrs).
 export const productOwnerSignalAnalytics: Role = {
   slug: 'product-owner-signal-analytics-2d9f4a',
   id: 'PO-SIGNAL',
-  title: 'Product Owner — Signal Analytics',
+  title: 'Product Owner — Signals Intelligence (Signal Analytics)',
   eyebrow: 'Role 07 · Product',
   location: 'Pune, Maharashtra, with occasional travel to customer sites',
   employment: 'Full-time · permanent',
   reportsTo: 'Founder',
   travel: 'Occasional, to customer sites',
+  datePosted: '2026-10-27',
   summary:
-    "Own the delivery of MonoEdge's signal-analytics product — turning high-frequency plant data into early warning, deployed to a repeatable standard across customer sites.",
+    'Own the delivery of Signals Intelligence (Signal Analytics) — turning high-frequency plant data into early warning, deployed to a repeatable standard across customer sites.',
   signal: 'waveform',
   positioning: 'Product ownership · 2–4 years.',
 
@@ -28,8 +29,8 @@ export const productOwnerSignalAnalytics: Role = {
       heading: 'Position summary',
       kind: 'prose',
       body: [
-        "MonoEdge's signal-analytics solutions convert high-frequency sensor and process data from industrial plants into early warning and process improvement.",
-        'As Product Owner for Signal Analytics, you are responsible for the definition, delivery, and standardisation of these solutions across customer engagements — and accountable for establishing a repeatable delivery process supported by clear quality standards.',
+        'Signals Intelligence (Signal Analytics) converts high-frequency sensor and process data from industrial plants into early warning and process improvement.',
+        'As Product Owner for Signals Intelligence (Signal Analytics), you are responsible for the definition, delivery, and standardisation of these solutions across customer engagements — and accountable for establishing a repeatable delivery process supported by clear quality standards.',
       ],
     },
     {

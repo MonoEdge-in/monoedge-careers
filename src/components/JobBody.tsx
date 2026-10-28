@@ -25,7 +25,7 @@ function Section({ section }: { section: Role['sections'][number] }) {
               />
               <span className="text-[1.0625rem] leading-relaxed text-[color:var(--color-muted)]">
                 {item.lead ? (
-                  <strong className="font-semibold text-[color:var(--color-void)]">{item.lead} </strong>
+                  <strong className="font-semibold text-[color:var(--color-void)]">{`${item.lead} `}</strong>
                 ) : null}
                 {item.text}
               </span>
@@ -44,7 +44,7 @@ export function JobBody({ role }: { role: Role }) {
         <aside className="lg:sticky lg:top-10 lg:self-start">
           <p className="t-label">The role</p>
           <p className="t-readout mt-3 text-[color:var(--color-muted)]">
-            {role.positioning ?? 'Senior individual contributor.'} One of {roleCountWord()} open roles at MonoEdge.
+            {`${role.positioning ?? 'Senior individual contributor.'} One of ${roleCountWord()} open roles at MonoEdge.`}
           </p>
           <a href="#apply" className="btn btn-quiet mt-6 inline-block no-underline">
             Apply

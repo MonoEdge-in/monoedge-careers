@@ -92,7 +92,6 @@ warehouse); basic cloud or Linux comfort; Git and the command line.
 | **Type** | Full-time, graduate / entry-level |
 | **Reports to** | Founder and senior team |
 | **Eligibility** | 2025 and 2026 graduates; any engineering discipline; basic coding knowledge |
-| **Compensation** | ₹6–12 LPA, based on skills and interview |
 
 ## Selection process
 

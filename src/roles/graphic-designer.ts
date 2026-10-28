@@ -9,7 +9,8 @@ export const graphicDesigner: Role = {
   location: 'Pune, with travel to manufacturing sites across India',
   employment: 'Full-time · on-site / hybrid',
   reportsTo: 'Founder',
-  travel: 'Occasional, to partner plants for shoots',
+  travel: 'Occasional, to customer plants for shoots',
+  datePosted: '2026-10-27',
   summary:
     'Own how MonoEdge looks and sounds — brand, product collateral, and plant-floor films that explain the work honestly.',
   signal: 'frame',
@@ -65,7 +66,7 @@ export const graphicDesigner: Role = {
           text: 'Take a rough brief from the Founder and come back with two considered options and the reasoning behind each, rather than one safe answer.',
         },
         {
-          text: 'Travel to partner plants, shoot usable footage in noisy and badly lit environments, and come back with something that cuts.',
+          text: 'Travel to customer plants, shoot usable footage in noisy and badly lit environments, and come back with something that cuts.',
         },
         {
           text: 'Build and maintain the asset system — templates, components, and files that other people can pick up without asking you first.',

@@ -3,9 +3,9 @@ import type { Role } from '../roles';
 /**
  * Each role gets the instrument from its own discipline: a calibration target
  * for vision, a control chart for analytics, crop marks for design, a
- * deployment topology for the Business Brain role, a wireframe for front-end,
- * a pipeline for data engineering, a signal trace for signal analytics, and a
- * roadmap for the Business Brain product owner. Same system, same palette,
+ * deployment topology for the Operations Intelligence (Business Brain) role, a wireframe for front-end,
+ * a pipeline for data engineering, a signal trace for Signals Intelligence (Signal Analytics), and a
+ * roadmap for the Operations Intelligence (Business Brain) product owner. Same system, same palette,
  * different tool.
  */
 export function Signal({ kind }: { kind: Role['signal'] }) {
