@@ -646,6 +646,7 @@ async function checkBrowser(base, slugs) {
         failedRequests.push(`${reason} ${url}`);
       });
       await page.setViewport({ width: viewport.width, height: viewport.height });
+      await page.setCacheEnabled(false);
       await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
 
       for (const path of paths) {
@@ -829,17 +830,30 @@ async function checkWizard(browser, url) {
     });
     pass('desktop apply wizard blocks a short written answer');
 
-    await desktop.evaluate(() => {
-      const field = document.querySelector('#written');
-      const proto = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value');
-      proto.set.call(
-        field,
-        'I shipped a surface-inspection system. The hard part was the data: labels from the running line did not match the set we trained on.',
-      );
-      field.dispatchEvent(new Event('input', { bubbles: true }));
-    });
+    await desktop.focus('#written');
+    await desktop.keyboard.down('Control');
+    await desktop.keyboard.press('KeyA');
+    await desktop.keyboard.up('Control');
+    await desktop.keyboard.press('Backspace');
+    await desktop.type(
+      '#written',
+      'I shipped a surface-inspection system. The hard part was the data: labels from the running line did not match the set we trained on.',
+    );
+    const writtenValue = await desktop.$eval('#written', (el) => el.value);
+    if (writtenValue.trim().length < 40) {
+      fail(`desktop apply wizard written answer stayed too short (${writtenValue.length} chars)`);
+      return;
+    }
     await desktop.click('#apply button.btn-primary');
-    await desktop.waitForFunction(() => document.body.innerText.includes('Application received'), { timeout: 8000 });
+    try {
+      await desktop.waitForFunction(() => document.body.innerText.includes('Application received'), { timeout: 8000 });
+    } catch (error) {
+      const detail = await desktop.evaluate(() => {
+        const alert = document.querySelector('#apply [role="alert"]');
+        return `${alert ? alert.textContent : 'no alert'} | posts ${window.__monoedgePosts}`;
+      });
+      throw new Error(`${error instanceof Error ? error.message : String(error)}; ${detail}`);
+    }
     const posts = await desktop.evaluate(() => window.__monoedgePosts);
     if (posts !== 1) fail(`desktop apply wizard intercepted ${posts} POSTs; expected 1, and none should reach the sheet`);
     else pass('desktop apply wizard reaches Application received (POST answered locally, not sent)');
