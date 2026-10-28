@@ -5,12 +5,15 @@
  *   npm run check
  *
  * PDF text needs Python 3 and pypdf (`pip install pypdf`).
+ * Desktop and mobile checks need puppeteer-core and Google Chrome.
+ * The apply wizard is filled in the browser. Its POST is answered locally,
+ * so the check does not submit an application.
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { createServer } from 'node:net';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import http from 'node:http';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -179,7 +182,17 @@ function checkRobotsAndSitemap(slugs) {
   const extra = locs.filter((url) => !expected.includes(url));
   if (missing.length || extra.length || locs.length !== expected.length) {
     fail(`sitemap locs do not match the published pages (missing ${missing.length}, extra ${extra.length})`);
+  } else if (!xmlWellFormed(sitemap)) {
+    fail('sitemap.xml is not well-formed XML');
   } else pass(`sitemap matches ${expected.length} published URLs`);
+}
+
+function xmlWellFormed(xml) {
+  const parsed = spawnSync('python3', ['-c', 'import sys, xml.etree.ElementTree as ET; ET.fromstring(sys.stdin.read())'], {
+    input: xml,
+    encoding: 'utf8',
+  });
+  return parsed.status === 0;
 }
 
 function hostMatches(pattern, host) {
@@ -269,6 +282,87 @@ const JD_HEADINGS = [
 ];
 
 const PAY = /₹|\bLPA\b|\bCTC\b|compensation|\bsalary\b|\bstipend\b|\blakhs?\b|pay range|per annum/i;
+
+const CAMERA_PHRASES = [
+  'Basler',
+  'FLIR',
+  'Hikrobot',
+  'partner plant',
+  'live production lines',
+  'first partner plant',
+];
+
+const TEXT_EXTENSIONS = new Set(['.html', '.js', '.css', '.txt', '.xml', '.json', '.svg', '.map', '.mjs']);
+
+function textFiles(dir) {
+  const found = [];
+  for (const name of readdirSync(dir)) {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) found.push(...textFiles(path));
+    else if (TEXT_EXTENSIONS.has(extname(name))) found.push(path);
+  }
+  return found;
+}
+
+function textOf(html) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;|&#39;|&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function mentionsTogether(text, left, right, span) {
+  let from = 0;
+  while (from < text.length) {
+    const at = text.indexOf(left, from);
+    if (at < 0) return false;
+    const after = text.slice(at, at + left.length + span);
+    const before = text.slice(Math.max(0, at - span), at);
+    if (after.includes(right) || before.includes(right)) return true;
+    from = at + left.length;
+  }
+  return false;
+}
+
+function checkBuiltCopy() {
+  if (!existsSync(dist)) {
+    fail('dist/ is missing, so camera-compliance text was not checked');
+    return;
+  }
+  const before = failures.length;
+  for (const file of textFiles(dist)) {
+    const text = read(file);
+    for (const phrase of CAMERA_PHRASES) {
+      if (text.includes(phrase)) fail(`${file.slice(root.length + 1)} contains "${phrase}"`);
+    }
+  }
+  if (failures.length === before) {
+    pass('built output has no vendor names, partner plants, or live-line claims');
+  }
+
+  const cvFile = join(dist, 'computer-vision-engineer-7f3ac1', 'index.html');
+  if (!existsSync(cvFile)) {
+    fail('Computer Vision Engineer page is missing, so Camera Intelligence and roadmap were not checked');
+    return;
+  }
+  const cv = read(cvFile);
+  if (!mentionsTogether(textOf(cv), 'Camera Intelligence', 'roadmap', 180)) {
+    fail('Computer Vision Engineer page does not mention Camera Intelligence together with roadmap');
+  } else pass('Computer Vision Engineer page mentions Camera Intelligence together with roadmap');
+
+  const posting = jsonLdBlocks(cv).find((block) => block['@type'] === 'JobPosting');
+  const description = typeof posting?.description === 'string' ? posting.description : '';
+  if (!mentionsTogether(description, 'Camera Intelligence', 'roadmap', 180)) {
+    fail('Computer Vision Engineer JobPosting does not mention Camera Intelligence together with roadmap');
+  } else pass('Computer Vision Engineer JobPosting mentions Camera Intelligence together with roadmap');
+}
 
 function pdfText(label, pdfPath) {
   const extracted = spawnSync(
@@ -448,6 +542,30 @@ async function checkPreview(slugs) {
       if (response.status !== 404) fail(`preview ${path} returned ${response.status}, expected 404`);
       else pass(`preview ${path} is 404`);
     }
+
+    const robotsResponse = await fetchUrl(`${base}/robots.txt`);
+    if (
+      robotsResponse.status !== 200 ||
+      !robotsResponse.body.includes('Allow: /') ||
+      !robotsResponse.body.includes('Sitemap: https://careers.monoedge.in/sitemap.xml')
+    ) {
+      fail('preview /robots.txt is missing or does not allow crawl and point at the careers sitemap');
+    } else pass('preview /robots.txt');
+
+    const sitemapResponse = await fetchUrl(`${base}/sitemap.xml`);
+    const servedLocs = [...sitemapResponse.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+    if (sitemapResponse.status !== 200 || servedLocs.length !== slugs.length + 1) {
+      fail(`preview /sitemap.xml returned ${sitemapResponse.status} with ${servedLocs.length} locs`);
+    } else if (!xmlWellFormed(sitemapResponse.body)) {
+      fail('preview /sitemap.xml is not well-formed XML');
+    } else pass(`preview /sitemap.xml serves ${servedLocs.length} URLs`);
+
+    try {
+      await checkBrowser(base, slugs);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      fail(`browser checks stopped (${message})`);
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     fail(`vite preview did not serve the build (${message})`);
@@ -467,10 +585,296 @@ async function checkPreview(slugs) {
   }
 }
 
+const VIEWPORTS = [
+  { name: 'desktop', width: 1280, height: 900 },
+  { name: 'mobile', width: 390, height: 844 },
+];
+
+function chromePath() {
+  const candidates = [
+    process.env.CHROME_PATH,
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/google-chrome',
+    '/usr/local/bin/google-chrome',
+  ].filter(Boolean);
+  return candidates.find((path) => existsSync(path)) ?? '';
+}
+
+function resumeFixture() {
+  const dir = join(root, 'node_modules/.check');
+  mkdirSync(dir, { recursive: true });
+  const path = join(dir, 'resume.pdf');
+  writeFileSync(
+    path,
+    '%PDF-1.1\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 300 144]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n',
+  );
+  return path;
+}
+
+async function checkBrowser(base, slugs) {
+  let puppeteer;
+  try {
+    const loaded = await import('puppeteer-core');
+    puppeteer = typeof loaded.launch === 'function' ? loaded : loaded.default;
+  } catch {
+    fail('puppeteer-core is not installed, so desktop and mobile pages were not opened');
+    return;
+  }
+  const executablePath = chromePath();
+  if (!executablePath) {
+    fail('Google Chrome is not installed, so desktop and mobile pages were not opened');
+    return;
+  }
+
+  const browser = await puppeteer.launch({
+    executablePath,
+    headless: true,
+    args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+  });
+
+  try {
+    const paths = ['/', ...slugs.map((slug) => `/${slug}/`)];
+    for (const viewport of VIEWPORTS) {
+      const page = await browser.newPage();
+      const pageErrors = [];
+      const failedRequests = [];
+      page.on('pageerror', (error) => pageErrors.push(error.message));
+      page.on('requestfailed', (request) => {
+        const url = request.url();
+        const reason = request.failure()?.errorText ?? 'failed';
+        if (!url.startsWith(base) || reason.includes('ERR_ABORTED')) return;
+        failedRequests.push(`${reason} ${url}`);
+      });
+      await page.setViewport({ width: viewport.width, height: viewport.height });
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+
+      for (const path of paths) {
+        pageErrors.length = 0;
+        failedRequests.length = 0;
+        let response;
+        try {
+          response = await page.goto(`${base}${path}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+          await page.waitForSelector('h1', { timeout: 10000 });
+          await page.waitForNetworkIdle({ idleTime: 400, timeout: 8000 }).catch(() => {});
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          fail(`${viewport.name} ${viewport.width}×${viewport.height} ${path} did not render (${message})`);
+          continue;
+        }
+        const status = response?.status() ?? 0;
+        const title = await page.title();
+        const h1 = await page.$eval('h1', (el) => (el.textContent ?? '').trim());
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        );
+        const report = await page.evaluate(() => {
+          const blocks = [...document.querySelectorAll('script[type="application/ld+json"]')];
+          if (!blocks.length) return { ld: 'missing JSON-LD', text: document.body.innerText };
+          try {
+            const parsed = blocks.map((el) => JSON.parse(el.textContent || ''));
+            const types = parsed.map((block) => block['@type']).join(', ');
+            return { ld: types || 'parsed', text: document.body.innerText };
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return { ld: `JSON-LD did not parse (${message})`, text: document.body.innerText };
+          }
+        });
+        const problems = [];
+        if (status !== 200) problems.push(`status ${status}`);
+        if (!h1) problems.push('missing h1');
+        if (overflow > 1) problems.push(`horizontal overflow ${overflow}px`);
+        if (pageErrors.length) problems.push(`page errors: ${pageErrors.join('; ')}`);
+        if (failedRequests.length) problems.push(`failed requests: ${failedRequests.join('; ')}`);
+        if (path === '/' && !report.ld.includes('Organization')) problems.push(`JSON-LD ${report.ld}`);
+        if (path === '/' && report.ld.includes('JobPosting')) problems.push('listing carries a JobPosting');
+        if (path !== '/' && !report.ld.includes('JobPosting')) problems.push(`JSON-LD ${report.ld}`);
+        for (const phrase of CAMERA_PHRASES) {
+          if (report.text.includes(phrase)) problems.push(`visible text contains "${phrase}"`);
+        }
+        if (
+          path.includes('computer-vision-engineer') &&
+          !mentionsTogether(report.text, 'Camera Intelligence', 'roadmap', 180)
+        ) {
+          problems.push('visible text does not mention Camera Intelligence together with roadmap');
+        }
+        const label = `${viewport.name} ${viewport.width}×${viewport.height} ${path}`;
+        if (problems.length) fail(`${label}: ${problems.join('; ')}`);
+        else pass(`${label} renders "${title}" (JSON-LD ${report.ld})`);
+      }
+      await page.close();
+    }
+
+    await checkInternalLinks(browser, base, slugs);
+    await checkWizard(browser, `${base}/computer-vision-engineer-7f3ac1/`);
+  } finally {
+    await browser.close();
+  }
+}
+
+async function checkInternalLinks(browser, base, slugs) {
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1280, height: 900 });
+  const origin = new URL(base).origin;
+  const checked = new Set();
+  const paths = ['/', ...slugs.map((slug) => `/${slug}/`)];
+
+  try {
+    for (const path of paths) {
+      await page.goto(`${base}${path}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.waitForSelector('a[href="#apply"], a[href="./computer-vision-engineer-7f3ac1/"]', { timeout: 10000 }).catch(
+        () => {},
+      );
+      const hrefs = await page.$$eval('a[href], link[href], script[src]', (nodes) =>
+        nodes.map((node) => node.getAttribute('href') || node.getAttribute('src') || ''),
+      );
+      for (const href of hrefs) {
+        if (!href || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('data:')) continue;
+        if (href.startsWith('#')) {
+          const key = `${path}${href}`;
+          if (checked.has(key)) continue;
+          checked.add(key);
+          const found = await page.evaluate((hash) => Boolean(document.querySelector(hash)), href);
+          if (!found) fail(`${path} apply/anchor ${href} does not resolve`);
+          else pass(`${path} ${href} resolves`);
+          continue;
+        }
+        let url;
+        try {
+          url = new URL(href, `${base}${path}`);
+        } catch {
+          fail(`${path} has an unreadable link ${href}`);
+          continue;
+        }
+        if (url.origin !== origin) continue;
+        const key = `${url.pathname}${url.search}`;
+        if (checked.has(key)) continue;
+        checked.add(key);
+        const response = await fetchUrl(`${base}${key}`);
+        if (response.status !== 200) fail(`internal link ${key} from ${path} returned ${response.status}`);
+        else pass(`internal link ${key} resolves`);
+      }
+    }
+  } finally {
+    await page.close();
+  }
+}
+
+async function checkWizard(browser, url) {
+  const desktop = await browser.newPage();
+  await desktop.setViewport({ width: 1280, height: 900 });
+  await desktop.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  await desktop.evaluateOnNewDocument(() => {
+    const original = window.fetch.bind(window);
+    window.__monoedgePosts = 0;
+    window.fetch = async (input, init) => {
+      const method = String(init?.method || 'GET').toUpperCase();
+      if (method === 'POST') {
+        window.__monoedgePosts += 1;
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return original(input, init);
+    };
+  });
+
+  try {
+    await desktop.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await desktop.waitForSelector('#apply button.btn-primary', { timeout: 10000 });
+    await desktop.click('#apply button.btn-primary');
+    await desktop.waitForSelector('#apply [role="alert"]', { timeout: 5000 });
+    const emptyError = await desktop.$eval('#apply [role="alert"]', (el) => el.textContent ?? '');
+    if (!emptyError.includes('Enter your full name.')) {
+      fail(`desktop apply wizard empty-form error was ${JSON.stringify(emptyError)}`);
+    } else pass('desktop apply wizard blocks an empty form');
+
+    await desktop.type('#fullName', 'Test Applicant');
+    await desktop.type('#email', 'test.applicant@example.com');
+    await desktop.type('#phone', '9730922589');
+    await desktop.type('#location', 'Pune');
+    await desktop.select(
+      '#experience',
+      await desktop.$eval('#experience', (el) => el.options[1].value),
+    );
+    await desktop.select('#notice', await desktop.$eval('#notice', (el) => el.options[1].value));
+    await desktop.type('#links', 'https://example.com/cv');
+    const resume = await desktop.$('#resume');
+    if (!resume) {
+      fail('desktop apply wizard is missing the CV input');
+      return;
+    }
+    await resume.uploadFile(resumeFixture());
+    await desktop.click('#apply button.btn-primary');
+    await desktop.waitForFunction(() => document.body.innerText.includes('Screening questions'), { timeout: 8000 });
+    const groups = await desktop.$$('[role="radiogroup"]');
+    if (groups.length < 1) {
+      fail('desktop apply wizard showed no screening questions');
+      return;
+    }
+    for (const group of groups) {
+      const choice = await group.$('[role="radio"]');
+      if (!choice) {
+        fail('desktop apply wizard has a screening question with no choice');
+        return;
+      }
+      await choice.click();
+    }
+    await desktop.click('#apply button.btn-primary');
+    await desktop.waitForSelector('#written', { timeout: 8000 });
+    await desktop.type('#written', 'Too short.');
+    await desktop.click('#apply button.btn-primary');
+    await desktop.waitForFunction(() => document.body.innerText.includes('Give this one a real answer'), {
+      timeout: 5000,
+    });
+    pass('desktop apply wizard blocks a short written answer');
+
+    await desktop.evaluate(() => {
+      const field = document.querySelector('#written');
+      const proto = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value');
+      proto.set.call(
+        field,
+        'I shipped a surface-inspection system. The hard part was the data: labels from the running line did not match the set we trained on.',
+      );
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await desktop.click('#apply button.btn-primary');
+    await desktop.waitForFunction(() => document.body.innerText.includes('Application received'), { timeout: 8000 });
+    const posts = await desktop.evaluate(() => window.__monoedgePosts);
+    if (posts !== 1) fail(`desktop apply wizard intercepted ${posts} POSTs; expected 1, and none should reach the sheet`);
+    else pass('desktop apply wizard reaches Application received (POST answered locally, not sent)');
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    fail(`desktop apply wizard did not finish (${message})`);
+  } finally {
+    await desktop.close();
+  }
+
+  const mobile = await browser.newPage();
+  await mobile.setViewport({ width: 390, height: 844 });
+  await mobile.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  try {
+    await mobile.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await mobile.waitForSelector('#apply button.btn-primary', { timeout: 10000 });
+    await mobile.click('#apply button.btn-primary');
+    await mobile.waitForSelector('#apply [role="alert"]', { timeout: 5000 });
+    const emptyError = await mobile.$eval('#apply [role="alert"]', (el) => el.textContent ?? '');
+    if (!emptyError.includes('Enter your full name.')) {
+      fail(`mobile apply wizard empty-form error was ${JSON.stringify(emptyError)}`);
+    } else pass('mobile apply wizard blocks an empty form');
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    fail(`mobile apply wizard did not finish (${message})`);
+  } finally {
+    await mobile.close();
+  }
+}
+
 const slugs = roleSlugs();
 if (slugs.length !== 8) fail(`expected 8 role slugs, found ${slugs.length}`);
 
 checkPages(slugs);
+checkBuiltCopy();
 note('validThrough is omitted on every role. Google requires it only when a posting expires, and these records have none.');
 checkRobotsAndSitemap(slugs);
 checkRedirect();

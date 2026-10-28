@@ -83,7 +83,7 @@ export function CareersPage() {
           <aside className="lg:sticky lg:top-10 lg:self-start">
             <p className="t-label">Open roles</p>
             <p className="t-readout mt-3 text-[color:var(--color-muted)]">
-              {`All ${count} are Pune-based, full-time, with travel to partner plants across India.`}
+              {`All ${count} are Pune-based, full-time, with travel to customer plants across India.`}
             </p>
           </aside>
 
