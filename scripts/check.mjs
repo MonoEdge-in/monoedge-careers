@@ -846,7 +846,10 @@ async function checkWizard(browser, url) {
     }
     await desktop.click('#apply button.btn-primary');
     try {
-      await desktop.waitForFunction(() => document.body.innerText.includes('Application received'), { timeout: 8000 });
+      // The success label is uppercased by CSS, so innerText reads "APPLICATION RECEIVED".
+      await desktop.waitForFunction(() => (document.body.textContent ?? '').includes('Application received'), {
+        timeout: 8000,
+      });
     } catch (error) {
       const detail = await desktop.evaluate(() => {
         const alert = document.querySelector('#apply [role="alert"]');
